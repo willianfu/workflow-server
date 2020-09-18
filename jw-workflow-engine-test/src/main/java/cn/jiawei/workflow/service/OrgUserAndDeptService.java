@@ -15,5 +15,11 @@ public interface OrgUserAndDeptService {
      */
     Object getOrgTreeData(Integer deptId, Boolean isDept, Boolean showLeave);
 
+    /**
+     * 模糊搜索用户
+     * @param userName 用户名/拼音/首字母
+     * @return 匹配到的用户
+     */
+    Object getOrgTreeUser(String userName);
 
 }

@@ -1,5 +1,7 @@
 package cn.jiawei.workflow.service.impl;
 
+import cn.hutool.core.lang.Validator;
+import cn.hutool.core.util.PinyinUtil;
 import cn.jiawei.workflow.bean.entity.Departments;
 import cn.jiawei.workflow.bean.entity.Users;
 import cn.jiawei.workflow.bean.vo.OrgTreeVo;
@@ -79,10 +81,10 @@ public class OrgUserAndDeptServiceImpl implements OrgUserAndDeptService {
         users.forEach(user -> {
             for (String did : user.getDepartmentIds().split(",")) {
                 List<Users> usersList = deptUsers.get(Long.parseLong(did));
-                if (null == usersList){
+                if (null == usersList) {
                     List<Users> list = new ArrayList<>();
                     list.add(user);
-                }else {
+                } else {
                     usersList.add(user);
                 }
             }
@@ -92,5 +94,32 @@ public class OrgUserAndDeptServiceImpl implements OrgUserAndDeptService {
 
         });
         return R.ok(Collections.EMPTY_LIST);
+    }
+
+    /**
+     * 模糊搜索用户
+     *
+     * @param userName 用户名/拼音/首字母
+     * @return 匹配到的用户
+     */
+    @Override
+    public Object getOrgTreeUser(String userName) {
+        Example example = new Example(Users.class);
+        Example.Criteria criteria = example.createCriteria().andIsNull("leaveDate");
+        if (Validator.isChinese(userName)) {
+            criteria.andLike("userName", "%" + userName + "%");
+        } else {
+            criteria.andLike("pingyin", "%" + userName + "%");
+        }
+        List<OrgTreeVo> list = new LinkedList<>();
+        usersMapper.selectByExample(example).forEach(user -> {
+            list.add(OrgTreeVo.builder().type("user")
+                    .sex(user.getSex())
+                    .avatar(user.getAvatar())
+                    .name(user.getUserName())
+                    .id(user.getUserId())
+                    .selected(false).build());
+        });
+        return R.ok(list);
     }
 }

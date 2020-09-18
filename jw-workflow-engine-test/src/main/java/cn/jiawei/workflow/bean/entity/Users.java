@@ -32,6 +32,9 @@ public class Users implements Serializable {
      * 用户名
      */
     private String userName;
+
+    //拼音
+    private String pingyin;
     /**
      * 昵称
      */

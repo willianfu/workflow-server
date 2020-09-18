@@ -32,4 +32,14 @@ public class OrgUserAndDeptController {
         return orgService.getOrgTreeData(deptId, isDept, showLeave);
     }
 
+    /**
+     * 模糊搜索用户
+     * @param userName 用户名/拼音/首字母
+     * @return 匹配到的用户
+     */
+    @GetMapping("tree/user/search")
+    public Object getOrgTreeUser(@RequestParam String userName){
+        return orgService.getOrgTreeUser(userName.trim());
+    }
+
 }
