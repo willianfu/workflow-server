@@ -29,4 +29,34 @@ public interface SettingService {
      * @return 模板详情数据
      */
     Object getFormTemplateById(String templateId);
+
+    /**
+     * 修改分组
+     * @param id 分组ID
+     * @param name 分组名
+     * @return 修改结果
+     */
+    Object updateFormGroupName(Integer id, String name);
+
+    /**
+     * 新增表单分组
+     * @param name 分组名
+     * @return 添加结果
+     */
+    Object createFormGroup(String name);
+
+    /**
+     * 删除分组
+     * @param id 分组ID
+     * @return 删除结果
+     */
+    Object deleteFormGroup(Integer id);
+
+    /**
+     * 编辑表单
+     * @param templateId 摸板ID
+     * @param type 类型 stop using delete
+     * @return 操作结果
+     */
+    Object updateForm(String templateId, String type, Integer groupId);
 }
