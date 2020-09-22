@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Date;
+
 /**
  * @author : willian fu
  * @date : 2020/9/21
@@ -15,6 +17,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class TemplateGroupBo {
 
+    private Integer id;
+
     private Integer groupId;
 
     private String groupName;
@@ -24,6 +28,10 @@ public class TemplateGroupBo {
     private String templateName;
 
     private String icon;
+
+    private Boolean isStop;
+
+    private Date updated;
 
     private String background;
 }

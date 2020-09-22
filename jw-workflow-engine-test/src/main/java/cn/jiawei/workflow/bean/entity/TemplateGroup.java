@@ -22,18 +22,18 @@ import javax.persistence.Table;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "TemplateGroup")
+@Table(name = "template_group")
 public class TemplateGroup implements Serializable {
     private static final long serialVersionUID = 296474043591142508L;
-    
+
     @Id
     private Integer id;
-    
+
     private String templateId;
-    
+
     private Integer groupId;
-    
+
     private Integer sortNum;
-    
+
     private Date created;
 }

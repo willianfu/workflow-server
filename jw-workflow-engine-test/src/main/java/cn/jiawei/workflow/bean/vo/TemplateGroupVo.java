@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -26,15 +27,21 @@ public class TemplateGroupVo {
     @Data
     @Builder
     @AllArgsConstructor
-    static class Template{
+    public static class Template{
 
         private String id;
+
+        private Integer tgId;
 
         private String name;
 
         private String icon;
 
+        private Boolean isStop;
+
         private String background;
+
+        private Date updated;
     }
 
 
