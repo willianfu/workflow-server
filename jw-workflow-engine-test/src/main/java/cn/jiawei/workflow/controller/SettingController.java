@@ -1,5 +1,6 @@
 package cn.jiawei.workflow.controller;
 
+import cn.jiawei.workflow.bean.entity.ProcessTemplates;
 import cn.jiawei.workflow.bean.vo.TemplateGroupVo;
 import cn.jiawei.workflow.service.SettingService;
 import org.apache.ibatis.annotations.Delete;
@@ -92,5 +93,15 @@ public class SettingController {
                              @RequestParam String type,
                              @RequestParam(required = false) Integer groupId){
         return settingService.updateForm(templateId, type, groupId);
+    }
+
+    /**
+     * 编辑表单详情
+     * @param template 表单模板信息
+     * @return 修改结果
+     */
+    @PutMapping("form/detail")
+    public Object updateFormDetail(@RequestBody ProcessTemplates template){
+        return settingService.updateFormDetail(template);
     }
 }

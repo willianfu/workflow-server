@@ -69,6 +69,7 @@ public class SettingServiceImpl implements SettingService {
                     templates.add(TemplateGroupVo.Template.builder()
                             .id(v.getTemplateId())
                             .tgId(v.getId())
+                            .remark(v.getRemark())
                             .name(v.getTemplateName())
                             .icon(v.getIcon())
                             .isStop(v.getIsStop())
@@ -137,6 +138,9 @@ public class SettingServiceImpl implements SettingService {
      */
     @Override
     public Object updateFormGroupName(Integer id, String name) {
+        if (id < 2){
+            return R.badRequest("基础分组不允许修改");
+        }
         groupsMapper.updateByPrimaryKeySelective(FormGroups.builder()
                 .groupId(id).groupName(name.trim()).build());
         return R.ok("修改成功");
@@ -151,6 +155,9 @@ public class SettingServiceImpl implements SettingService {
     @Override
     public Object createFormGroup(String name) {
         Date time = GregorianCalendar.getInstance().getTime();
+        if (groupsMapper.selectCount(FormGroups.builder().groupName(name).build()) > 0){
+            return R.badRequest("分组名称 " + name + " 已存在");
+        }
         groupsMapper.insertSelective(
                 FormGroups.builder().groupName(name)
                         .sortNum(1).created(time)
@@ -167,6 +174,9 @@ public class SettingServiceImpl implements SettingService {
     @Override
     @Transactional
     public Object deleteFormGroup(Integer id) {
+        if (id < 2){
+            return R.badRequest("基础分组不允许删除");
+        }
         Example example = new Example(TemplateGroup.class);
         example.createCriteria().andEqualTo("groupId", id);
         templateGroupMapper.updateByExampleSelective(TemplateGroup.builder().groupId(1).build(), example);
@@ -204,5 +214,34 @@ public class SettingServiceImpl implements SettingService {
             return R.badRequest("不支持的操作");
         }
         return R.ok("操作成功");
+    }
+
+    /**
+     * 编辑表单详情
+     *
+     * @param template 表单模板信息
+     * @return 修改结果
+     */
+    @Override
+    @Transactional
+    public Object updateFormDetail(ProcessTemplates template) {
+        Date time = GregorianCalendar.getInstance().getTime();
+        if (ObjectUtil.isNull(template.getTemplateId())){
+            template.setTemplateId(String.valueOf(time.getTime()).substring(5));
+            template.setCreated(time);
+            template.setUpdated(GregorianCalendar.getInstance().getTime());
+            template.setIsStop(false);
+            templatesMapper.insertSelective(template);
+            templateGroupMapper.insertSelective(
+                    TemplateGroup.builder().groupId(1)
+                            .sortNum(1)
+                            .templateId(template.getTemplateId()).build());
+            return R.ok(template.getTemplateId());
+        }else {
+            template.setCreated(null);
+            template.setUpdated(time);
+            templatesMapper.updateByPrimaryKeySelective(template);
+            return R.ok("发布更新后的表单成功");
+        }
     }
 }

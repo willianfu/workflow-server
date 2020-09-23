@@ -1,5 +1,6 @@
 package cn.jiawei.workflow.service;
 
+import cn.jiawei.workflow.bean.entity.ProcessTemplates;
 import cn.jiawei.workflow.bean.vo.TemplateGroupVo;
 
 import java.util.List;
@@ -59,4 +60,12 @@ public interface SettingService {
      * @return 操作结果
      */
     Object updateForm(String templateId, String type, Integer groupId);
+
+    /**
+     * 编辑表单详情
+     * @param template 表单模板信息
+     * @return 修改结果
+     */
+    Object updateFormDetail(ProcessTemplates template);
+
 }

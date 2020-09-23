@@ -31,6 +31,8 @@ public class TemplateGroupBo {
 
     private Boolean isStop;
 
+    private String remark;
+
     private Date updated;
 
     private String background;

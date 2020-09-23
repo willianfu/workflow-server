@@ -25,7 +25,7 @@ import javax.persistence.Table;
 @Table(name = "process_templates")
 public class ProcessTemplates implements Serializable {
     private static final long serialVersionUID = -95829441258242072L;
-    
+
     @Id
     /**
     * 审批摸板ID
@@ -39,7 +39,7 @@ public class ProcessTemplates implements Serializable {
     * 摸板表单
     */
     private String formItems;
-    
+
     private String process;
     /**
     * 图标
@@ -61,6 +61,8 @@ public class ProcessTemplates implements Serializable {
     * 谁能导出数据
     */
     private String whoExport;
+
+    private String remark;
     /**
     * 是否已停用
     */

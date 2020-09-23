@@ -39,6 +39,8 @@ public class TemplateGroupVo {
 
         private Boolean isStop;
 
+        private String remark;
+
         private String background;
 
         private Date updated;
