@@ -49,6 +49,8 @@ public class ProcessTemplates implements Serializable {
     * 图标背景色
     */
     private String background;
+
+    private String notify;
     /**
     * 谁能提交
     */
