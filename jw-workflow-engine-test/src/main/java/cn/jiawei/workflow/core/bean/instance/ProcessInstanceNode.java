@@ -1,6 +1,10 @@
 package cn.jiawei.workflow.core.bean.instance;
 
+import cn.jiawei.workflow.core.bean.instance.node.BaseUserNode;
+import cn.jiawei.workflow.core.enums.ApprovalModeEnum;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 
@@ -10,6 +14,8 @@ import java.util.List;
  * 流程实例节点
  */
 @Data
+@Builder
+@NoArgsConstructor
 public class ProcessInstanceNode {
 
     //节点ID
@@ -18,6 +24,9 @@ public class ProcessInstanceNode {
     //节点名称
     private String nodeName;
 
-    //该节点下的审批人
-    private List<ProcessInstanceUserNode> userNode;
+    //审批模式 会签/或签/依次顺序签署
+    private ApprovalModeEnum mode;
+
+    //该节点下的人员
+    private List<BaseUserNode> userNode;
 }

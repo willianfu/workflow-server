@@ -11,7 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public abstract class Instance {
 
-    //审批实例
+    //进行中的审批实例
     protected static final Map<String, Process> instanceCache = new ConcurrentHashMap<>();
 
     protected Map<String, Process> getInstance(){return instanceCache;};
