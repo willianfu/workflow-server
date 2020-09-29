@@ -6,10 +6,10 @@ import java.util.LinkedList;
  * @author : willian fu
  * @version : 1.0
  */
-public interface ProcessInstance {
+public interface Process {
 
 
-    LinkedList<Process> getProcessLink();
+    LinkedList<java.lang.Process> getProcessLink();
 
     /**
      * 同意流程

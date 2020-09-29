@@ -1,6 +1,6 @@
 package cn.jiawei.workflow.core.instance;
 
-import cn.jiawei.workflow.core.ProcessInstace;
+import cn.jiawei.workflow.core.Process;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -12,7 +12,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public abstract class Instance {
 
     //审批实例
-    protected static final Map<String, ProcessInstace> instanceCache = new ConcurrentHashMap<>();
+    protected static final Map<String, Process> instanceCache = new ConcurrentHashMap<>();
 
-    public abstract Map<String, ProcessInstace> getInstance();
+    protected Map<String, Process> getInstance(){return instanceCache;};
 }
