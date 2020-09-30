@@ -19,10 +19,10 @@ import java.util.List;
 public class ProcessInstanceNode {
 
     //节点ID
-    private String nodeId;
+    private String taskId;
 
     //节点名称
-    private String nodeName;
+    private String taskName;
 
     //审批模式 会签/或签/依次顺序签署
     private ApprovalModeEnum mode;

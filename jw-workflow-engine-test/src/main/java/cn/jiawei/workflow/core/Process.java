@@ -1,6 +1,8 @@
 package cn.jiawei.workflow.core;
 
+import cn.jiawei.workflow.core.bean.instance.ApproveOpinion;
 import cn.jiawei.workflow.core.bean.instance.ProcessInstanceNode;
+import cn.jiawei.workflow.core.exceptions.NotFoundApprovalUserException;
 import cn.jiawei.workflow.core.exceptions.ProcessNoAuthorityException;
 
 import java.util.LinkedList;
@@ -26,12 +28,12 @@ public interface Process {
     /**
      * 同意流程
      */
-    void agree(String userId) throws ProcessNoAuthorityException;
+    void agree(String userId, ApproveOpinion opinion) throws ProcessNoAuthorityException, NotFoundApprovalUserException;
 
     /**
      * 驳回流程
      */
-    void refuse(String userId);
+    void refuse(String userId, ApproveOpinion opinion);
 
     /**
      * 撤销流程
