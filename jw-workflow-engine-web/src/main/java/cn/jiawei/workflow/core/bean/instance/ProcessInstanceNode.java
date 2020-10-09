@@ -24,6 +24,9 @@ public class ProcessInstanceNode {
     //节点名称
     private String taskName;
 
+    //是审批结点
+    private Boolean isApprove;
+
     //审批模式 会签/或签/依次顺序签署
     private ApprovalModeEnum mode;
 

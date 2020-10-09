@@ -2,6 +2,8 @@ package cn.jiawei.workflow.core.instance;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
+import cn.jiawei.workflow.bean.entity.ProcessInstances;
+import cn.jiawei.workflow.core.Notify;
 import cn.jiawei.workflow.core.Process;
 import cn.jiawei.workflow.core.bean.instance.ApproveOpinion;
 import cn.jiawei.workflow.core.bean.instance.ProcessInstanceNode;
@@ -13,9 +15,12 @@ import cn.jiawei.workflow.core.enums.ApprovalResultEnum;
 import cn.jiawei.workflow.core.enums.ProcessInstanceStatusEnum;
 import cn.jiawei.workflow.core.exceptions.NotFoundApprovalUserException;
 import cn.jiawei.workflow.core.exceptions.ProcessNoAuthorityException;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.util.GregorianCalendar;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -23,19 +28,18 @@ import java.util.Map;
  * @version : 1.0
  * 审批流程实例
  */
+@Data
+@EqualsAndHashCode(callSuper = true)
 public class ProcessInstance extends Instance implements Process {
 
     //流程审批顺序 正向
     private Boolean direction = false;
 
-    //审批实例ID
-    private String instanceId;
+    //消息通知接口
+    private Notify notify;
 
-    //审批结果
-    private ApprovalResultEnum result;
-
-    //审批状态
-    private ProcessInstanceStatusEnum status;
+    //审批实例
+    private ProcessInstances processInstance;
 
     //当前审批结点
     private Integer currentApproveNode;
@@ -43,15 +47,16 @@ public class ProcessInstance extends Instance implements Process {
     //当前流程结点，包括评论
     private Integer currentProcessNode;
 
-    private LinkedList<ProcessInstanceNode> processLinked;
+    //审批流程链
+    private List<ProcessInstanceNode> processLinked;
 
     ProcessInstance() {
-        LinkedList<ProcessInstanceNode> instanceNodes = new LinkedList<>();
-        instanceNodes.add(rootUserNode);
+        List<ProcessInstanceNode> instanceNodes = new LinkedList<>();
+        //instanceNodes.add(rootUserNode);
     }
 
     @Override
-    public LinkedList<ProcessInstanceNode> getProcessLink() {
+    public List<ProcessInstanceNode> getProcessLink() {
         return processLinked;
     }
 
@@ -69,28 +74,29 @@ public class ProcessInstance extends Instance implements Process {
      * 同意流程
      */
     @Override
-    public void agree(String userId, ApproveOpinion opinion) throws ProcessNoAuthorityException, NotFoundApprovalUserException {
+    public void agree(String userId, ApproveOpinion opinion)
+            throws ProcessNoAuthorityException, NotFoundApprovalUserException {
         if (this.resultHandler(true, userId, opinion)) {
             //校验整个节点是否审批结束
             ApprovalResultEnum nodeResult = this.getNodeResult(this.getCurrentNode());
             if (ObjectUtil.isNull(nodeResult)) {
                 //还没有结束
-                this.result = null;
-                this.status = ProcessInstanceStatusEnum.RUNNING;
+                this.processInstance.setResult(null);
+                this.processInstance.setStatus(ProcessInstanceStatusEnum.RUNNING);
             } else if (ApprovalResultEnum.AGREE.equals(nodeResult)) {
                 //本节点审批完成，获取下一个审批节点
                 Integer nextApproveNode = this.getNextApproveNode();
                 if (ObjectUtil.isNull(nextApproveNode)) {
                     //没有需要审批的节点，整个流程已经处理完毕
-                    this.result = nodeResult;
-                    this.status = ProcessInstanceStatusEnum.FINISH;
-                }else {
-                    this.currentProcessNode ++;
-                    this.toEachNextNode();
+                    this.processInstance.setResult(nodeResult);
+                    nextApproveNode = this.processLinked.size();
+                    this.processInstance.setStatus(ProcessInstanceStatusEnum.FINISH);
                 }
+                //一直执行到下一个审批结点
+                this.toEachExNextNode(nextApproveNode);
             } else if (ApprovalResultEnum.REFUSE.equals(nodeResult)) {
-                this.result = nodeResult;
-                this.status = ProcessInstanceStatusEnum.FINISH;
+                this.processInstance.setResult(nodeResult);
+                this.processInstance.setStatus(ProcessInstanceStatusEnum.FINISH);
             }
         }
 
@@ -98,22 +104,47 @@ public class ProcessInstance extends Instance implements Process {
 
     /**
      * 执行下面的工作流节点
+     * @param nextApproveNode 下一个审批结点/终点
      */
-    private void toEachNextNode(){
-
+    private void toEachExNextNode(Integer nextApproveNode){
+        do {
+            this.currentProcessNode ++;
+            ProcessInstanceNode instanceNode = this.processLinked.get(this.currentProcessNode);
+            if (ObjectUtil.isNotNull(instanceNode)){
+               //判断是否是抄送结点
+                if (!instanceNode.getIsApprove()){
+                    //是抄送结点就执行抄送任务
+                    this.carbonCopyHandler(instanceNode);
+                }else {
+                    //审批结点就终止处理
+                    break;
+                }
+            }
+        }while (this.currentProcessNode < nextApproveNode);
     }
 
 
+    /**
+     * 处理抄送任务
+     * @param node 抄送结点
+     */
     private void carbonCopyHandler(ProcessInstanceNode node){
-
+        node.getUserNode().forEach(cc -> {
+            this.notify.info(cc.getUserId(), cc.getUserName() + "发起的审批，请知晓");
+        });
     }
 
     /**
      * 驳回流程
      */
     @Override
-    public void refuse(String userId, ApproveOpinion opinion) {
-
+    public void refuse(String userId, ApproveOpinion opinion)
+            throws NotFoundApprovalUserException, ProcessNoAuthorityException {
+        if (this.resultHandler(true, userId, opinion)) {
+            //只要驳回了，整个流程直接结束
+            this.processInstance.setResult(ApprovalResultEnum.REFUSE);
+            this.processInstance.setStatus(ProcessInstanceStatusEnum.FINISH);
+        }
     }
 
     /**
@@ -129,7 +160,7 @@ public class ProcessInstance extends Instance implements Process {
      */
     @Override
     public void reverse(String userId) {
-
+        //暂不实现
     }
 
     /**

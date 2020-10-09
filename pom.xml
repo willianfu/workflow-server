@@ -13,7 +13,7 @@
   
   <modules>
     <module>jw-workflow-engine-sdk</module>
-    <module>jw-workflow-engine-test</module>
+    <module>jw-workflow-engine-web</module>
   </modules>
   
   <!--springboot全局版本配置-->

@@ -11,7 +11,7 @@
   </parent>
   
   <groupId>cn.jiawei.workflow</groupId>
-  <artifactId>jw-workflow-engine-test</artifactId>
+  <artifactId>jw-workflow-engine-web</artifactId>
   <version>1.0.0-SNAPSHOT</version>
   
   <dependencies>
