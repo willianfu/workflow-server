@@ -1,5 +1,6 @@
 package cn.jiawei.workflow.core.bean.instance.node;
 
+import cn.jiawei.workflow.core.enums.NodeTypeEnum;
 import lombok.Data;
 
 /**

@@ -11,8 +11,8 @@ spring:
       enabled: true
   #配置数据源
   datasource:
-    url: jdbc:mysql://localhost:3306/workflow?useUnicode=true&characterEncoding=utf8
-    #url: jdbc:mysql://47.100.202.245:3306/workflow?useUnicode=true&characterEncoding=utf8
+    #url: jdbc:mysql://localhost:3306/workflow?useUnicode=true&characterEncoding=utf8
+    url: jdbc:mysql://47.100.202.245:3306/workflow?useUnicode=true&characterEncoding=utf8
     driverClassName: com.mysql.jdbc.Driver
     username: jiawei
     password: Fjw@4015.

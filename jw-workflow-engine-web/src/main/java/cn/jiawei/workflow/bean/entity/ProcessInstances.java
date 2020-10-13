@@ -27,12 +27,12 @@ import javax.persistence.Table;
 @Table(name = "process_instances")
 public class ProcessInstances implements Serializable {
     private static final long serialVersionUID = -68887731634085079L;
-    
+
     @Id
     /**
     * 流程实例ID
     */
-    private Integer instanceId;
+    private String instanceId;
     /**
     * 流程标题
     */

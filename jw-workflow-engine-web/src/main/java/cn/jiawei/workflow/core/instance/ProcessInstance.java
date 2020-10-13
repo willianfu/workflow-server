@@ -12,6 +12,7 @@ import cn.jiawei.workflow.core.bean.instance.node.BaseUserNode;
 
 import cn.jiawei.workflow.core.enums.ApprovalModeEnum;
 import cn.jiawei.workflow.core.enums.ApprovalResultEnum;
+import cn.jiawei.workflow.core.enums.NodeTypeEnum;
 import cn.jiawei.workflow.core.enums.ProcessInstanceStatusEnum;
 import cn.jiawei.workflow.core.exceptions.NotFoundApprovalUserException;
 import cn.jiawei.workflow.core.exceptions.ProcessNoAuthorityException;
@@ -38,22 +39,21 @@ public class ProcessInstance extends Instance implements Process {
     //消息通知接口
     private Notify notify;
 
+    //实例ID
+    private String instanceId;
+
     //审批实例
     private ProcessInstances processInstance;
 
     //当前审批结点
-    private Integer currentApproveNode;
+    private Integer currentApproveNode = 0;
 
     //当前流程结点，包括评论
-    private Integer currentProcessNode;
+    private Integer currentProcessNode = 0;
 
     //审批流程链
     private List<ProcessInstanceNode> processLinked;
 
-    ProcessInstance() {
-        List<ProcessInstanceNode> instanceNodes = new LinkedList<>();
-        //instanceNodes.add(rootUserNode);
-    }
 
     @Override
     public List<ProcessInstanceNode> getProcessLink() {
@@ -104,31 +104,34 @@ public class ProcessInstance extends Instance implements Process {
 
     /**
      * 执行下面的工作流节点
+     *
      * @param nextApproveNode 下一个审批结点/终点
      */
-    private void toEachExNextNode(Integer nextApproveNode){
+    private void toEachExNextNode(Integer nextApproveNode) {
         do {
-            this.currentProcessNode ++;
+            this.currentProcessNode++;
             ProcessInstanceNode instanceNode = this.processLinked.get(this.currentProcessNode);
-            if (ObjectUtil.isNotNull(instanceNode)){
-               //判断是否是抄送结点
-                if (!instanceNode.getIsApprove()){
+            if (ObjectUtil.isNotNull(instanceNode)) {
+                //判断是否是抄送结点
+                if (!NodeTypeEnum.SP.equals(instanceNode.getNodeType())) {
                     //是抄送结点就执行抄送任务
                     this.carbonCopyHandler(instanceNode);
-                }else {
+                } else {
                     //审批结点就终止处理
+                    this.currentApproveNode = this.currentProcessNode;
                     break;
                 }
             }
-        }while (this.currentProcessNode < nextApproveNode);
+        } while (this.currentProcessNode < nextApproveNode);
     }
 
 
     /**
      * 处理抄送任务
+     *
      * @param node 抄送结点
      */
-    private void carbonCopyHandler(ProcessInstanceNode node){
+    private void carbonCopyHandler(ProcessInstanceNode node) {
         node.getUserNode().forEach(cc -> {
             this.notify.info(cc.getUserId(), cc.getUserName() + "发起的审批，请知晓");
         });
@@ -140,7 +143,7 @@ public class ProcessInstance extends Instance implements Process {
     @Override
     public void refuse(String userId, ApproveOpinion opinion)
             throws NotFoundApprovalUserException, ProcessNoAuthorityException {
-        if (this.resultHandler(true, userId, opinion)) {
+        if (this.resultHandler(false, userId, opinion)) {
             //只要驳回了，整个流程直接结束
             this.processInstance.setResult(ApprovalResultEnum.REFUSE);
             this.processInstance.setStatus(ProcessInstanceStatusEnum.FINISH);
@@ -161,6 +164,23 @@ public class ProcessInstance extends Instance implements Process {
     @Override
     public void reverse(String userId) {
         //暂不实现
+    }
+
+    /**
+     * 启动该实例
+     */
+    @Override
+    public void startup() {
+        Integer nextApproveNode = this.getNextApproveNode();
+        if (ObjectUtil.isNull(nextApproveNode)) {
+            //没有需要审批的节点，整个流程已经处理完毕
+            this.processInstance.setResult(ApprovalResultEnum.AGREE);
+            nextApproveNode = this.processLinked.size();
+            this.processInstance.setStatus(ProcessInstanceStatusEnum.FINISH);
+        }
+        //一直执行到下一个审批结点
+        this.toEachExNextNode(nextApproveNode);
+        this.getInstance().put(this.instanceId, this);
     }
 
     /**
@@ -225,9 +245,9 @@ public class ProcessInstance extends Instance implements Process {
         Integer index = 0;
         for (ProcessInstanceNode node : this.processLinked) {
             //必须是后面的节点
-            if (index > this.currentApproveNode
+            if (index >= this.currentApproveNode
                     && CollectionUtil.isNotEmpty(node.getUserNode())
-                    && node.getUserNode().get(0) instanceof ApproveUserNode) {
+                    && NodeTypeEnum.SP.equals(node.getNodeType())) {
                 return index;
             }
             index++;
@@ -248,18 +268,16 @@ public class ProcessInstance extends Instance implements Process {
     private boolean resultHandler(boolean result, String userId, ApproveOpinion opinion)
             throws ProcessNoAuthorityException, NotFoundApprovalUserException {
         ProcessInstanceNode currentNode = this.getCurrentNode();
-        if (CollectionUtil.isNotEmpty(currentNode.getUserNode())) {
+        if (CollectionUtil.isNotEmpty(currentNode.getUserNode()) && NodeTypeEnum.SP.equals(currentNode.getNodeType())) {
             for (BaseUserNode node : currentNode.getUserNode()) {
-                if (node instanceof ApproveUserNode) {
-                    ApproveUserNode approveNode = (ApproveUserNode) node;
-                    if (userId.equals(node.getUserId()) && ObjectUtil.isNull(approveNode.getResult())) {
-                        approveNode.setResult(result ? ApprovalResultEnum.AGREE : ApprovalResultEnum.REFUSE);
-                        approveNode.setEnd(GregorianCalendar.getInstance().getTime());
-                        approveNode.setOpinion(opinion);
-                        return true;
-                    } else {
-                        throw new ProcessNoAuthorityException("该用户无法审批当前节点");
-                    }
+                ApproveUserNode approveNode = (ApproveUserNode) node;
+                if (userId.equals(node.getUserId()) && ObjectUtil.isNull(approveNode.getResult())) {
+                    approveNode.setResult(result ? ApprovalResultEnum.AGREE : ApprovalResultEnum.REFUSE);
+                    approveNode.setEnd(GregorianCalendar.getInstance().getTime());
+                    approveNode.setOpinion(opinion);
+                    return true;
+                } else {
+                    throw new ProcessNoAuthorityException("该用户无法审批当前节点");
                 }
             }
         } else {

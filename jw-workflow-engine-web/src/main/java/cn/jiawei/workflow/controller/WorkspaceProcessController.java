@@ -1,11 +1,11 @@
 package cn.jiawei.workflow.controller;
 
+import cn.jiawei.workflow.bean.entity.ProcessInstances;
+import cn.jiawei.workflow.bean.vo.ProcessApproveVo;
+import cn.jiawei.workflow.bean.vo.ProcessInstancesVo;
 import cn.jiawei.workflow.service.WorkspaceProcessService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * @author : willian fu
@@ -32,5 +32,15 @@ public class WorkspaceProcessController {
     @GetMapping("process/{status}")
     public Object getProcessInstance(){
         return null;//processService.getProcessInstance();
+    }
+
+    /**
+     * 创建审批实例
+     * @param instancesVo 审批信息
+     * @return 创建结果
+     */
+    @PostMapping("process/instance")
+    public Object createApproveInstance(@RequestBody ProcessInstancesVo instancesVo){
+        return processService.createApproveInstance(instancesVo);
     }
 }

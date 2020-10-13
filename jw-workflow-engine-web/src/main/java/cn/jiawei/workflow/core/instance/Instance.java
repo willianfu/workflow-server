@@ -15,4 +15,8 @@ public abstract class Instance {
     protected static final Map<String, Process> instanceCache = new ConcurrentHashMap<>();
 
     protected Map<String, Process> getInstance(){return instanceCache;};
+
+    public static Process getInstance(String instanceId){
+        return instanceCache.get(instanceId);
+    }
 }

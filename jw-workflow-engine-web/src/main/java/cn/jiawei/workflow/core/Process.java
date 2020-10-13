@@ -46,6 +46,11 @@ public interface Process {
     void reverse(String userId);
 
     /**
+     * 启动该实例
+     */
+    void startup();
+
+    /**
      * 添加一个结点
      * @param instanceNode 结点数据
      */
